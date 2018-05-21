@@ -1,4 +1,4 @@
-class Event < ApplicationRecord
+class Event < ActiveRecord::Base
   def self.prepare(aggregate_id, attributes)
     new(
       aggregate_id: aggregate_id,
