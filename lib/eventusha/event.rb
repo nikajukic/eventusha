@@ -1,5 +1,7 @@
 module Eventusha
 	class Event < ActiveRecord::Base
+		self.table_name = 'events'
+
 	  def self.prepare(aggregate_id, attributes)
 	    new(
 	      aggregate_id: aggregate_id,
