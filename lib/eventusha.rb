@@ -1,3 +1,6 @@
+require 'active_record'
+require 'active_model'
+
 require 'eventusha/version'
 
 require 'eventusha/aggregate'
