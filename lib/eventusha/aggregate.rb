@@ -1,4 +1,4 @@
-module
+module Eventusha
 	class Aggregate
 		attr_reader :aggregate_id
 
