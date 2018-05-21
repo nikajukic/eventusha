@@ -1,4 +1,4 @@
-class <%= migration_class_name %> < ActiveRecord::Migration
+class <%= migration_class_name %> < ActiveRecord::Migration[5.1]
   def change
 		create_table :events do |t|
       t.string :aggregate_id
