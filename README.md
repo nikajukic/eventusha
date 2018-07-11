@@ -16,8 +16,8 @@ Execute:
 
 And then:
 
-	$ rails generate eventusha:install
-	$ rake db:migrate
+  $ rails generate eventusha:install
+  $ rake db:migrate
 
 
 ## Usage
@@ -26,11 +26,11 @@ Event Sourcing and CQRS consist of a few different elements. Recommended folder 
 ```
 app
 ──cqrs
-	──aggregates
-	──command_handlers
-	──commands
-	──event_handlers
-	──events
+  ──aggregates
+  ──command_handlers
+  ──commands
+  ──event_handlers
+  ──events
 ```
 
 ### Controller
@@ -72,12 +72,12 @@ Use `attributes` method to define command attributes. These attributes are going
 
 ```ruby
 module Commands
-	class CreateBankAccount < Eventusha::Command
-	  attributes :first_name, :last_name
+  class CreateBankAccount < Eventusha::Command
+    attributes :first_name, :last_name
 
-	  validates :first_name, presence: true
-	  validates :last_name, presence: true
-	end
+    validates :first_name, presence: true
+    validates :last_name, presence: true
+  end
 end
 ```
 
@@ -92,15 +92,15 @@ Use `aggregate` method to define which aggregate is going to be used. Selected a
 
 ```ruby
 module CommandHandlers
-	class CreateBankAccount < Eventusha::CommandHandler
-	  aggregate :bank_account
+  class CreateBankAccount < Eventusha::CommandHandler
+    aggregate :bank_account
 
-	  def execute
-	    bank_account = aggregate.new
+    def execute
+      bank_account = aggregate.new
 
-	    bank_account.create_bank_account(command.attributes)
-	  end
-	end
+      bank_account.create_bank_account(command.attributes)
+    end
+  end
 end
 ```
 
@@ -108,15 +108,15 @@ You can create a new aggregate with `aggregate.new` or build by replaying all ev
 
 ```ruby
 module CommandHandlers
-	class PerformDeposit < Eventusha::CommandHandler
-	  aggregate :bank_account
+  class PerformDeposit < Eventusha::CommandHandler
+    aggregate :bank_account
 
-	  def execute
-	    bank_account = aggregate.find(command.aggregate_id)
+    def execute
+      bank_account = aggregate.find(command.aggregate_id)
 
-	    bank_account.perform_deposit(command.attributes)
-	  end
-	end
+      bank_account.perform_deposit(command.attributes)
+    end
+  end
 end
 ```
 
@@ -128,40 +128,40 @@ When an action initiated from command handler is executed on an aggregate, one o
 Define what happens on an aggregate when you replay an event.
 
 ```ruby
-	on EventClass do |event|
-		#define what happens on aggregate when you replay this event
-	end
+  on EventClass do |event|
+    #define what happens on aggregate when you replay this event
+  end
 ```
 
 ```ruby
 module Aggregates
-	class BankAccount < Eventusha::Aggregate
-	  def initialize
-	    @aggregate_id = SecureRandom.uuid
-	    @amount = 0
-	  end
+  class BankAccount < Eventusha::Aggregate
+    def initialize
+      @aggregate_id = SecureRandom.uuid
+      @amount = 0
+    end
 
-	  def create_bank_account(attributes)
-	    apply Events::BankAccountCreated.prepare(aggregate_id, attributes)
-	  end
+    def create_bank_account(attributes)
+      apply Events::BankAccountCreated.prepare(aggregate_id, attributes)
+    end
 
-	  def perform_deposit(attributes)
-	    apply Events::DepositPerformed.prepare(aggregate_id, attributes)
-	  end
+    def perform_deposit(attributes)
+      apply Events::DepositPerformed.prepare(aggregate_id, attributes)
+    end
 
-	  private
+    private
 
-	  on Events::BankAccountCreated do |event|
-	    @aggregate_id = event.aggregate_id
-	    @amount = 0
-	    @first_name = event.first_name
-	    @last_name = event.last_name
-	  end
+    on Events::BankAccountCreated do |event|
+      @aggregate_id = event.aggregate_id
+      @amount = 0
+      @first_name = event.first_name
+      @last_name = event.last_name
+    end
 
-	  on Events::DepositPerformed do |event|
-	    @amount += event.amount.to_i
-	  end
-	end
+    on Events::DepositPerformed do |event|
+      @amount += event.amount.to_i
+    end
+  end
 end
 ```
 
@@ -180,11 +180,11 @@ You need to define accessors for data attributes saved in JSON.
 
 ```ruby
 module Events
-	class BankAccountCreated < Eventusha::Event
-	  event_handler :bank_account
+  class BankAccountCreated < Eventusha::Event
+    event_handler :bank_account
 
-	  store_accessor :data, :first_name, :last_name
-	end
+    store_accessor :data, :first_name, :last_name
+  end
 end
 ```
 
@@ -194,22 +194,22 @@ Event handlers are usually updating view models after event is created. You need
 
 ```ruby
 module EventHandlers
-	class BankAccount < Eventusha::EventHandler
-	  on Events::BankAccountCreated do |event|
-	    ::BankAccount.create(
-	      aggregate_id: event.aggregate_id,
-	      first_name: event.first_name,
-	      last_name: event.last_name,
-	      amount: 0
-	    )
-	  end
+  class BankAccount < Eventusha::EventHandler
+    on Events::BankAccountCreated do |event|
+      ::BankAccount.create(
+        aggregate_id: event.aggregate_id,
+        first_name: event.first_name,
+        last_name: event.last_name,
+        amount: 0
+      )
+    end
 
-	  on Events::DepositPerformed do |event|
-	    bank_account = ::BankAccount.find_by(aggregate_id: event.aggregate_id)
-	    bank_account.amount += event.amount.to_i
-	    bank_account.save
-	  end
-	end
+    on Events::DepositPerformed do |event|
+      bank_account = ::BankAccount.find_by(aggregate_id: event.aggregate_id)
+      bank_account.amount += event.amount.to_i
+      bank_account.save
+    end
+  end
 end
 ```
 
